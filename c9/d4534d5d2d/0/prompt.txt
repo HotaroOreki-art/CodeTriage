@@ -1,0 +1,22 @@
+I am starting a fresh agent session to implement the Track 3 Noon Curveball for CodeTriage.
+
+Before you write ANY code, you must run an Entire Graph impact analysis command in the terminal to identify every parser, lifecycle handler, summary path, and Checkpoint writing path affected by a transcript format change.
+
+### Reconstructing Context & The Invalidated Assumption
+Our pre-curveball checkpoint established a pre-commit CLI gatekeeper (Entire external agent) that calculates blast radius via a BFS graph (ESI Level 1 if Depth >= 3 or Impacted >= 10). 
+* **The Invalidated Assumption:** We assumed the agent would only ever provide the original standard Entire lifecycle payloads. This is invalidated. We must now support a new, heterogeneous JSONL transcript format from "AcmeCode", alongside the original format.
+
+### Curveball Requirements
+Update `agents/entire-agent-codetriage/` to meet these strict requirements:
+1. **Dual Support:** Refactor the parser (likely inside `identify_modified_files` and the `commit` hook) to support BOTH the original format and the new AcmeCode JSONL format (extracting modified files from the `file_changed` events). Do not duplicate the entire implementation—use a unified adapter.
+2. **Resilience:** Unknown JSON events must be skipped/ignored without crashing.
+3. **Incomplete Data:** An incomplete/truncated JSONL transcript must parse whatever lines are valid and produce a partial result, rather than discarding or corrupting the session.
+4. **Preserve Behavior:** Existing checkpoint behavior and ESI triage logic must remain exactly the same.
+5. **Testing:** Add explicit `pytest` tests covering:
+   - The original format.
+   - The new JSONL format.
+   - A payload with unknown events.
+   - An incomplete/truncated JSONL input.
+6. **Git Hook Fix (From Audit):** Fix our Git hook installation logic so it installs exactly as `.git/hooks/pre-commit` (not `pre-commit-codetriage`), ensuring it actually fires.
+
+Once implemented and tested, generate a final checkpoint document at `docs/checkpoints/checkpoint_final_curveball.md` explicitly explaining the invalidated assumption, our design changes, and why the new result is safe.
