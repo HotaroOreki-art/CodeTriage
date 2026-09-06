@@ -1,0 +1,62 @@
+{
+  "cli_version": "0.10.5",
+  "checkpoint_id": "4c368a9084a0",
+  "session_id": "0da07c3a-e748-4280-847a-8ebdd374067c",
+  "strategy": "manual-commit",
+  "created_at": "2026-09-06T07:24:03.4008648Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "save_step_count": 1,
+  "files_touched": [
+    "docs/checkpoints/checkpoint_1.md"
+  ],
+  "agent": "Cursor",
+  "model": "",
+  "turn_id": "0fa8121bab42",
+  "compact_transcript_start": 0,
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-09-06T07:24:03.3274Z",
+    "agent_lines": 0,
+    "agent_removed": 0,
+    "human_added": 0,
+    "human_modified": 79,
+    "human_removed": 78,
+    "total_committed": 0,
+    "total_lines_changed": 157,
+    "agent_percentage": 0,
+    "metric_version": 2
+  },
+  "prompt_attributions": [
+    {
+      "checkpoint_number": 1,
+      "user_lines_added": 622,
+      "user_lines_removed": 581,
+      "agent_lines_added": 0,
+      "agent_lines_removed": 0,
+      "user_added_per_file": {
+        ".cursor/hooks.json": 40,
+        "agents/entire-agent-amp/scripts/verify-amp.sh": 118,
+        "agents/entire-agent-goose/scripts/verify-goose.sh": 146,
+        "agents/entire-agent-kilo/scripts/verify-kilo.sh": 18,
+        "docs/checkpoints/checkpoint_1.md": 79,
+        "mise-tasks/build": 85,
+        "mise-tasks/lint/_default": 24,
+        "mise-tasks/lint/licenses": 39,
+        "mise-tasks/test": 73
+      },
+      "user_removed_per_file": {
+        "agents/entire-agent-amp/scripts/verify-amp.sh": 118,
+        "agents/entire-agent-goose/scripts/verify-goose.sh": 146,
+        "agents/entire-agent-kilo/scripts/verify-kilo.sh": 18,
+        "docs/checkpoints/checkpoint_1.md": 78,
+        "mise-tasks/build": 85,
+        "mise-tasks/lint/_default": 24,
+        "mise-tasks/lint/licenses": 39,
+        "mise-tasks/test": 73
+      }
+    }
+  ]
+}
