@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -23,6 +24,10 @@ LEGACY_GIT_HOOK_NAME = "pre-commit-codetriage"
 EVENT_SESSION_START = 1
 EVENT_TURN_END = 3
 EVENT_SESSION_END = 5
+
+
+class HookInstallError(Exception):
+    """Raised when install would overwrite a pre-commit hook CodeTriage does not own."""
 
 
 def hook_marker_path(root: Path | None = None) -> Path:
@@ -44,6 +49,7 @@ def are_hooks_installed(root: Path | None = None) -> bool:
 def install_hooks(force: bool = False, local_dev: bool = False, root: Path | None = None) -> int:
     del local_dev  # protocol flag is a no-op
     repo = root or repo_root()
+    _refuse_foreign_pre_commit(repo)
     path = hook_marker_path(repo)
     if path.is_file() and not force:
         if are_hooks_installed(repo):
@@ -213,10 +219,22 @@ def _git_changed_files() -> list[str]:
     return files
 
 
+def _refuse_foreign_pre_commit(repo: Path) -> None:
+    git_dir = repo / ".git"
+    if not git_dir.exists():
+        return
+    hook = git_dir / "hooks" / GIT_HOOK_NAME
+    if not hook.is_file() or _is_codetriage_git_hook(hook):
+        return
+    print(hook, file=sys.stderr)
+    raise HookInstallError(f"refusing to overwrite existing pre-commit hook: {hook}")
+
+
 def _write_git_commit_hook(repo: Path) -> None:
     git_dir = repo / ".git"
     if not git_dir.exists():
         return
+    _refuse_foreign_pre_commit(repo)
     hooks_dir = git_dir / "hooks"
     hooks_dir.mkdir(parents=True, exist_ok=True)
     legacy = hooks_dir / LEGACY_GIT_HOOK_NAME
@@ -241,7 +259,7 @@ def _write_git_commit_hook(repo: Path) -> None:
 def _is_codetriage_git_hook(path: Path) -> bool:
     try:
         text = path.read_text(encoding="utf-8")
-    except OSError:
+    except (OSError, UnicodeError):
         return False
     return "entire-agent-codetriage" in text and "parse-hook" in text
 

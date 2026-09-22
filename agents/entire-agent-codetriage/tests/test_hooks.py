@@ -3,7 +3,10 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from entire_agent_codetriage.hooks import (
+    HookInstallError,
     are_hooks_installed,
     evaluate_commit,
     install_hooks,
@@ -27,6 +30,7 @@ def test_install_writes_git_pre_commit_hook(tmp_path: Path, monkeypatch) -> None
 
     assert install_hooks(root=tmp_path) == 0
     assert hook.is_file()
+    assert "entire-agent-codetriage parse-hook --hook commit" in hook.read_text(encoding="utf-8")
 
     uninstall_hooks(tmp_path)
     assert not hook.exists()
@@ -40,6 +44,23 @@ def test_install_uninstall_roundtrip(tmp_path: Path, monkeypatch) -> None:
     assert are_hooks_installed(tmp_path) is True
     assert install_hooks(root=tmp_path) == 0
     uninstall_hooks(tmp_path)
+    assert are_hooks_installed(tmp_path) is False
+
+
+def test_install_refuses_foreign_pre_commit(tmp_path: Path, monkeypatch, capsys) -> None:
+    monkeypatch.setenv("ENTIRE_REPO_ROOT", str(tmp_path))
+    hooks = tmp_path / ".git" / "hooks"
+    hooks.mkdir(parents=True)
+    hook = hooks / "pre-commit"
+    original = b"#!/bin/sh\n# husky\nnpx husky\n"
+    hook.write_bytes(original)
+
+    with pytest.raises(HookInstallError):
+        install_hooks(root=tmp_path)
+
+    assert hook.read_bytes() == original
+    captured = capsys.readouterr()
+    assert str(hook) in captured.err
     assert are_hooks_installed(tmp_path) is False
 
 
